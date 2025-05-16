@@ -15,7 +15,7 @@ src/piper/backup
 analytical_solution
 oculus_reader
 oculus_reader/oculus_reader
-**/__pycache__/build/
+**/__pycache__/
 log/
 install/
 *.wav
@@ -26,3 +26,7 @@ Log/OrbbecSDK.log*.txt
 src/Log/OrbbecSDK.log*.txt
 Log/OrbbecSDK.log*.txt
 src/Log/*.log*.txt
+src/piper_navigation/src/unitree_lidar_sdk/bin/*
+*tfevent*
+*.ipynb
+videos/

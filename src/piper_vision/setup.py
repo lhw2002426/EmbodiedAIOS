@@ -24,7 +24,8 @@ setup(
     entry_points={
         'console_scripts': [
         'object_detector = piper_vision.object_detector:main',
-        'yolo_detect_3d=piper_vision.yolo_detect_3d:main'
+        'yolo_detect_3d = piper_vision.yolo_detect_3d:main',
+        'vlm_mapper_node = piper_vision.vlm_mapper_node:main'
         ],
     },
 )

@@ -4,6 +4,8 @@ from geometry_msgs.msg import PointStamped
 import tf2_ros
 import tf2_geometry_msgs
 
+
+# @TODO 需要整理下到底到底有几个坐标系，需要发布多少个坐标转换节点/话题
 class TFTransformer(Node):
     def __init__(self):
         super().__init__('tf_transformer')

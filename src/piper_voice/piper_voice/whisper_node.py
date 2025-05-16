@@ -6,16 +6,27 @@ import whisper
 import time
 import os
 from piper_msgs.srv import PlayText
+import torch
 
 
 KEYWORDS = ["你好", "开始", "激活"]
 TEMP_AUDIO_FILE = "./temp_listen.wav"
 
+
+# @TODO 需要后期加入声纹识别模块
 class WhisperNode(Node):
     def __init__(self):
         super().__init__('whisper_node')
-        self.model = whisper.load_model("small")  # 可选 base / medium / large
-        self.get_logger().info("✅ ✅ ✅ Whisper 模型加载完成，准备监听语音指令")
+        self.model = whisper.load_model("small", download_root='/mnt/DataDisk/MODELS')  # 可选 base / medium / large
+
+        # ✅ 加载完之后，转到 GPU
+        if torch.cuda.is_available():
+            self.model = self.model.to('cuda')
+            self.get_logger().info("✅ Whisper 模型已移动到 GPU 运行")
+        else:
+            self.get_logger().warn("⚠️ CUDA 不可用，Whisper 将在 CPU 上运行")
+
+        self.get_logger().info("✅ Whisper 模型加载完成，准备监听语音指令")
         self.publisher = self.create_publisher(String, 'voice_command', 10)
         # self.tts_pub = self.create_publisher(String, '·', 10)
         self.client = self.create_client(PlayText, 'play_tts')
@@ -75,7 +86,7 @@ class WhisperNode(Node):
 
 
     def record_audio(self, filename, duration=3):
-        cmd = ["arecord", "-D", "plughw:1,0", "-d", str(duration), "-f", "cd", filename]
+        cmd = ["arecord", "-D", "plughw:2,0", "-d", str(duration), "-f", "cd", filename]
         subprocess.run(cmd)
 
     def transcribe_audio(self, filename):

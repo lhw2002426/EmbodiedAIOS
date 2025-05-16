@@ -47,7 +47,7 @@ piper_rl/
 启动命令示例：
 
 ```bash
-ros2 launch piper_description piper_gazebo.launch.py
+ros2 launch piper_gazebo piper_gazebo.launch.py
 ```
 
 使用下面的指令查看当前仿真的控制器是否存在，我的这个有点问题（厂家的gazebo跟moveit有冲突，JRM,SDA,WY)
@@ -69,6 +69,11 @@ ros2 launch piper_moveit_config_v4 demo.launch.py
 （后来发现不用moveit貌似还是照样跑仿真，很抽象, 这里面的控制器的关系已经不想去厘清了，毁灭吧）
 
 ![gazebo + moveit](./gazebo+moveit.png)
+
+此外，需要给机械臂设置一个目标点位让他去靠近：
+```angular2
+ ros2 topic pub -r 1 /base_target_point geometry_msgs/msg/PointStamped "{header: {stamp: {sec: 0, nanosec: 0}, frame_id: 'base_link'}, point: {x: 0.2, y: 0.24, z: 0.25}}"
+```
 
 ### 2. 训练强化学习策略
 自行更换路径

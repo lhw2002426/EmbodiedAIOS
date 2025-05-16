@@ -1,75 +1,109 @@
-小车导航启动
-编译
-```
+# 🚗 小车导航启动指南
+
+---
+
+## 🔧 编译项目
+
+```bash
 colcon build --symlink-install
 ```
 
- ## slam启动
-1.运行前先装pcl
-2.关闭dhcp服务器，分配ip
-```
+---
+
+## 🗺️ SLAM 启动步骤
+
+### ✅ 准备工作
+
+1. 安装 `PCL`（点云库）  
+2. 设置固定 IP，关闭 DHCP：
+
+```bash
 sudo ip addr add 192.168.1.2/24 dev enx00e04c360241
 ```
 
-```
-# unitree_lidar_ros2负责发送PointCloud2消息
+---
+
+### 🚀 启动雷达与点云转换
+
+#### 1. 启动 Lidar 驱动发布 `PointCloud2` 数据：
+
+```bash
 source install/setup.bash
 ros2 launch unitree_lidar_ros2 launch.py
 ```
+
+#### 2. 手动发布雷达坐标变换（TF）：
+
+```bash
+ros2 run tf2_ros static_transform_publisher \
+  --x 0 --y 0 --z 0 \
+  --qx 0 --qy 0 --qz 1 --qw 0 \
+  --frame-id base_link --child-frame-id unilidar_lidar
 ```
-#手动进行雷达坐标转换
-ros2 run tf2_ros static_transform_publisher --x 0 --y 0 --z 0 --qx 0 --qy 0 --qz 1 --qw 0 --frame-id base_link --child-frame-id unilidar_lidar
-```
-```
-# pointcloud_to_laserscan将PointCloud2消息转换为LaserScan
+
+#### 3. 将点云转换为 `LaserScan`：
+
+```bash
 source install/setup.bash
 ros2 launch pointcloud_to_laserscan sample_pointcloud_to_laserscan_launch.py
 ```
 
- ```
- #进行plan修复
+#### 4. 路径修复模块启动（可选）：
+
+```bash
 source install/setup.bash
 ros2 launch goal_path_fixer fixers_launch.py
- ```
- 
-下面是扫描建图的步骤， 如果仅仅需要启动而不需要建图，则不用执行
-
-
 ```
-# slam_toolbox负责建图
+
+---
+
+### 🧭 扫描建图（可选）
+
+如果你只需导航，不需要建图，则此步可跳过。
+
+```bash
 source install/setup.bash
 ros2 launch slam_toolbox online_sync_launch.py
 ```
 
-## 小车启动
-参见src/piper_ranger
+---
 
-## nv2启动
+## 🚘 小车控制启动
 
+请参考代码路径：  
 ```
-#启动rviz
+src/piper_ranger
+```
+
+---
+
+## 🧠 Nav2 导航启动流程
+
+### 1. 启动 RViz 可视化工具：
+
+```bash
 source install/setup.sh
-ros2 run rviz2 rviz2 -d  rviz/rviz.config.rviz
-```  
-
-```  
-# slam_toolbox负责建图  
-source install/setup.bash  
-ros2 launch slam_toolbox online_sync_launch.py  
+ros2 run rviz2 rviz2 -d rviz/rviz.config.rviz
 ```
 
+### 2. 启动建图（如需建图）：
+
+```bash
+source install/setup.bash
+ros2 launch slam_toolbox online_sync_launch.py
 ```
-# 运行map_server和amcl系统
+
+### 3. 启动 `map_server` 与 `amcl`：
+
+```bash
 source install/setup.sh
 ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=map/my_map.yaml
-```
-
-```
-source install/setup.sh
 ros2 run nav2_amcl amcl --ros-args --params-file nav2_config/nav2_params.yaml
 ```
-```
-# 启动map_server和amcl系统
+
+或使用脚本一键启动：
+
+```bash
 ./activate_map.sh
 # ros2 lifecycle set map_server configure
 # ros2 lifecycle set map_server activate
@@ -77,7 +111,13 @@ ros2 run nav2_amcl amcl --ros-args --params-file nav2_config/nav2_params.yaml
 # ros2 lifecycle set amcl activate
 ```
 
+### 4. 启动 Nav2 主导航系统：
+
+```bash
+ros2 launch nav2_bringup navigation_launch.py \
+  use_sim_time:=false \
+  map:=map/my_map.yaml \
+  params_file:=nav2_config/nav2_params.yaml
 ```
-# 启动Nav2
-ros2 launch nav2_bringup navigation_launch.py use_sim_time:=false map:=map/my_map.yaml params_file:=nav2_config/nav2_params.yaml
-```
+
+---

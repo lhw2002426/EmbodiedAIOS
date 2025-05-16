@@ -3,6 +3,7 @@ from rclpy.node import Node
 from std_msgs.msg import String
 import requests
 import json
+from piper_msgs.srv import PlayText
 
 class OllamaChat():
     def __init__(self, system_message="你现在是一个四轮小车底座+六自由度夹爪机械臂的大脑，这一系统具备有视觉功能，语音识别与输出功能、机械臂控制功能，你的主要任务是充当指令到分解的任务的转换员，将从语音系统转换的指令转化为各个子系统的细分任务。",
@@ -54,11 +55,14 @@ class OllamaChat():
         message.append({"role": "assistant", "content": return_text})
         return return_text, message
 
+
+#@TODO 需要协调处理下，如何分辨是否需要planner参与还是简单的问答
 class LLMNode(Node):
     def __init__(self):
         super().__init__('llm_node')
         self.sub = self.create_subscription(String, 'voice_command', self.cb, 10)
         self.pub = self.create_publisher(String, 'parsed_plan', 10)
+        self.tts_client = self.create_client(PlayText, 'play_tts')
         self.chatbot = OllamaChat()
         self.msg_history = []
         self.get_logger().info("🧠 LLM Node Ready - 使用 DeepSeek-R1-14B")

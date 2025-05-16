@@ -35,6 +35,21 @@
 11. **piper_sim**  
     - Piper 机械臂仿真环境，整合了模型、控制、运动规划等功能，方便在 Gazebo 等模拟器中进行开发和测试。
 
+12. **piper_nav**  
+    - 基于 ROS 2 Nav2 框架构建的小车导航功能包，集成了定位（AMCL）、路径规划与避障（Nav2 Planner、Controller）、可视化（RViz）等模块，支持地图载入、生命周期管理、路径跟踪与目标点导航等核心功能。
+
+13. **piper_ranger**  
+    - 松灵小车（Ranger Mini V2）控制集成包，负责小车底盘控制、CAN 总线驱动（GS_USB）、Odometry 计算与发布、TF 坐标变换支持，并提供键盘遥控、里程计发布、TF 广播和控制接口桥接等底层接口，确保小车与导航系统的无缝联动。
+   
+14. **piper_rl**  
+    - 基于 ROS2 + Gazebo 仿真环境 + Moveit运动学控制，使用强化学习（PPO算法）训练 Piper 机械臂实现抓取任务。
+
+15. **piper_slam**  
+    - 基于unitree_lidar_sdk和IMU的建图（SLAM Toolbox）
+
+15. **piper_spatiallm**  
+    - SpatialLM 是一个 3D LLM，旨在处理 3D 点云数据并生成结构化的 3D 场景理解输出。这些输出包括建筑元素，例如墙壁、门、窗以及带有语义类别的定向物体边界框。
+   
 ---
 
 ## 🎯 目标
@@ -43,9 +58,12 @@
 
 1. 用户通过语音下达指令  
 2. 大模型（LLM）理解任务  
-3. 视觉识别目标  
+3. 视觉识别目标 + VLM理解环境 + SpatialLM识别物品特征 
 4. 坐标转换  
 5. 机械臂执行抓取动作
+6. 地图建模与导航、避障
+7. 语义地图构建
+8. 具身智能管理任务执行
 
 ---
 
@@ -62,7 +80,13 @@
 🧠 llm_node.py（大模型解析意图） ← LLM（Ollama）
        │ → 输出到 /object_request (String)
        ▼
-👁️ yolo_detect_3d.py（目标检测，模拟/真实YOLO）
+🎯 SLAM（读取地图，找到目标） ← 语义地图（VLM_mapper）
+       │ → 输出到 /object_request (String)
+       ▼
+🚗 Nav2（导航与避障） ← 地图 + Ranger_SDK
+       │ → 输出到 /object_request (String)
+       ▼
+👁️ yolo_detect_3d.py（到地方了再做新的目标检测，模拟/真实YOLO）
        │ → 输出到 /camera_target_point (geometry_msgs/PointStamped)
        │ → 注意：相机的坐标系与机械臂的坐标系不一定一致，需要手动标定或使用 TF 动态转换
        ▼

@@ -29,9 +29,11 @@ def generate_launch_description():
 
     # 因为 urdf文件中有一句 $(find mybot) 需要用xacro进行编译一下才行
     xacro_file = urdf_model_path
-    doc = xacro.parse(open(xacro_file))
-    xacro.process_doc(doc)
-    params = {'robot_description': remove_comments(doc.toxml())}
+    # doc = xacro.parse(open(xacro_file))
+    # xacro.process_doc(doc)
+    # params = {'robot_description': remove_comments(doc.toxml())}
+    xacro_result = xacro.process_file(xacro_file)
+    params = {'robot_description': remove_comments(xacro_result.toxml())}
 
     # 启动了robot_state_publisher节点后，该节点会发布 robot_description 话题，话题内容是模型文件urdf的内容？
     node_robot_state_publisher = Node(
